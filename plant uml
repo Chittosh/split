@@ -1,0 +1,83 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+skinparam rectangle {
+  BackgroundColor #F9F9F9
+  BorderColor #333333
+  RoundCorner 15
+  Shadowing false
+}
+skinparam arrowColor #444444
+skinparam defaultFontName "Arial"
+
+title Application Process Flow (With Delete Group Option)
+
+actor User
+
+' ==== UI Components ====
+rectangle "LoginComponent" as login
+rectangle "ShowGroupsComponent" as groups
+rectangle "GroupDetailsComponent" as groupDetails
+rectangle "AddExpenseComponent" as addExpense
+rectangle "CreateGroupsComponent" as createGroup
+rectangle "AddUserComponent" as addUser
+rectangle "AuthService" as auth
+
+' ==== Repository Layer ====
+rectangle "UserRepository" as userRepo
+rectangle "GroupRepository" as groupRepo
+
+' ==== Service Layer ====
+rectangle "RestDataSource" as rest
+
+' ==== Model Layer ====
+rectangle "UserModel" as userModel
+rectangle "GroupModel" as groupModel
+rectangle "ExpenseModel" as expenseModel
+
+' ==== Database Collections ====
+rectangle "/Users (Collection)" as usersDB
+rectangle "/Groups (Collection)" as groupsDB
+rectangle "/Expenses (Collection)" as expensesDB
+
+
+' ==== User Flow (Horizontal Top) ====
+User -right-> login
+login -right-> groups
+
+' ==== Auth ====
+login -down-> auth
+
+' ==== ShowGroups Flow ====
+groups -down-> createGroup : "Create Group"
+createGroup -up-> groups : "Return to Groups"
+
+groups -right-> groupDetails : "Select Existing Group"
+
+' ==== GroupDetails Options ====
+groupDetails -right-> addExpense : "Add Expense"
+groupDetails -down-> addUser : "Add User"
+groupDetails -down-> groupRepo : "Delete Group (Only Creator)"
+
+' ==== Component -> Repository Connections ====
+login -down-> userRepo
+groups -down-> groupRepo
+groupDetails -down-> groupRepo
+addExpense -down-> groupRepo
+createGroup -down-> groupRepo
+addUser -down-> userRepo
+
+' ==== Repositories -> RestDataSource ====
+userRepo -down-> rest
+groupRepo -down-> rest
+
+' ==== RestDataSource -> Models ====
+rest -down-> userModel
+rest -down-> groupModel
+rest -down-> expenseModel
+
+' ==== Models -> Collections ====
+userModel -down-> usersDB
+groupModel -down-> groupsDB
+expenseModel -down-> expensesDB
+
+@enduml
